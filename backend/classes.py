@@ -42,16 +42,16 @@ class Event():
       More specific cause of the fire
     IncidentShortDescription: str
       Short description of the fire
-    Coordinates: list
-      Coordinates in [Longitude, Lattitude], see EventUtils.get_coordinates() in the next cell
     InitialLatitude: float
-      Initial latitude (if available) of the fire
+      Initial latitude extracted by EventUtils.get_coordinates() 
     InitialLongitude: float
-      Initial longitude (if available) of the fire
-    POOCity: str
-      Starting city of the fire (if available)
-    POOCounty: str
-      Starting county of the fire (if available)
+      Initial longitude extracted by EventUtils.get_coordinates() 
+    State: str
+      Starting state
+    City: str
+      Starting city of the fire
+    County: str
+      Starting county of the fire
     Priority: float
       Priority of the fire, see EventUtils.determine_priority() for more info.
       User is also able to set this value manually.
@@ -62,8 +62,6 @@ class Event():
       init function
     __str__()
       returns basic information about wildfire event
-    detailed_description()
-      returns all information on wildfire event in string format
     convert_date(date)
       converts ersiFieldTypeDate to datetime.datetime object
       ref: https://pro.arcgis.com/en/pro-app/latest/help/mapping/time/convert-string-or-numeric-time-values-into-data-format.htm
@@ -121,10 +119,6 @@ class Event():
 Incident Name: {self.IncidentName}\n Coverage in Acres: {self.Acres}\n Start Date: {self.convert_date(self.CreateDate)}\n Time Elapsed: {str(self.time_elapsed())}\n Fire Behavior: {self.FireBehaviorGeneral}\n Cause: {self.FireCause}\n Estimated Cost: {self.Cost}\n\n \
 Description of the Incident:\n {self.IncidentShortDescription}"
 
-    # TODO
-    def detailed_description(self):
-        return f"ID: {self.ID}, "
-
     # convert ersi date integer to datetime
     def convert_date(self, date):
         """
@@ -173,6 +167,37 @@ Description of the Incident:\n {self.IncidentShortDescription}"
 
 
 class EventStack():
+    """
+    Stack class to store wildfire events based on priority. 
+    Custom functionality developed to work with wildfire events. 
+    See EventUtils.determine_priority() for more info on how priority 
+    is determined. 
+
+    Attributes
+    ----------
+    events: List
+      list to represent stack 
+
+    Methods
+    -------
+    __init___()
+      init function 
+    isEmpty(): 
+      returns True or False whether the stack is empty or not
+    push(): 
+      push item to top of the stack 
+    pop(): 
+      pop item from top of the stack and returns the tiem
+    peek(): 
+      returns item from top of the stack without popping 
+    size(): 
+      returns size of the stack
+    get_by_ID():
+      searches for an item in the stack by its ID, time complexity: O(n) 
+    get_top_three(): 
+      gets the top three items from the stack to be used later in user dashboard
+    """
+
     def __init__(self):
         self.events = []
 
@@ -191,13 +216,21 @@ class EventStack():
     def size(self):
         return len(self.events)
 
-    # TODO: get element by ID function
     def get_by_ID(self, ID):
+        """
+        Simply iterates through the stack to find the event with specified ID. 
+
+        Time complexity O(n) 
+        """
         for event in self.events:
             if event.ID == ID:
                 return event.return_dict()
 
     def get_top_three(self):
+        """
+        Returns top 3 elements from stack in an array to be used later 
+        in user dashboard. 
+        """
         events = []
         events.append(self.events[-1])
         events.append(self.events[-2])
@@ -224,7 +257,11 @@ class EventUtils():
     get_coordinates(feature) -> list
       Gets the coordinates of a wildfire event by taking the mean value of the
       coordinates of the permiter of the event
-
+    partition(fires, low, high): 
+      function to create partitions used in quicksort() 
+    quicksort(fires, low, high): 
+      function to sort items in an array by their priority, this funciton is used when 
+      instatiating the EventStack object. 
 
     """
 
@@ -275,6 +312,9 @@ class EventUtils():
 
     @staticmethod
     def partition(fires, low, high):
+        """
+        partition() creates partitions to be used in quicksort() 
+        """
         pivot = fires[high]
         i = low - 1
 
@@ -287,6 +327,17 @@ class EventUtils():
         return i+1
 
     def quicksort(fires, low=0, high=None):
+        """
+        quicksort() is a function that takes an array of fires and sorts it 
+        by priority index. This function is called when instatiating the EventStack class. 
+
+        The quicksort algorithm itself intakes an array of values and chooses a value as 
+        the pivot. Then it moves all other values so the lower priorities are on the 
+        left side of the pivot element. The algorithm then recursively does the same operation 
+        on both sub arrays on each side of the pivot until the array is sorted. 
+
+        Time complexity: Worst case O(n^2), however, average case is O(n log n)
+        """
         if high == None:
             high = len(fires) - 1
 
@@ -297,6 +348,11 @@ class EventUtils():
 
     @staticmethod
     def plot_map(fires):
+        """
+        Method to plot wildfire events to an interactive map. This function 
+        returns a matplotlib figure which is rendered later by plotly.express 
+        on the website. 
+        """
         # Dict array of wildfire events for plotting
         fires_dict_array = [event.return_dict() for event in fires]
         # Store dict array in dataframe
@@ -322,6 +378,10 @@ class EventUtils():
     # Method to load fires from data into list
     @staticmethod
     def load_fires(data) -> list:
+        """
+        load_fires() load wildfire event information received from the API, extracting 
+        only the properties needed for this program. 
+        """
         fires = []
         for feature in data['features']:
             properties = feature['properties']
@@ -337,6 +397,12 @@ class EventUtils():
 
     @staticmethod
     def load_stack(fires) -> EventStack:
+        """
+        load_stack simple creates a stack from an array of wildfire events, 
+        with the wildfire with the highest priority index being at the top of the stack. 
+        To do this, EventUtils.quicksort() is called on the wildfire array, 
+        then that array is used to create an EventStack object. 
+        """
         stack = EventStack()
         EventUtils.quicksort(fires)
 
@@ -347,6 +413,11 @@ class EventUtils():
 
     @staticmethod
     def get_stats(fires):
+        """
+        get_stats is a simple function that returns basic stats of wildfire
+        events in an array. As of now the stats returns are: total acerage, 
+        total number of fires, and total estimated supression cost. 
+        """
         stats = dict()
 
         # Total fires in array
@@ -362,27 +433,14 @@ class EventUtils():
         # Total estimated cost
         stats["estimated_cost"] = stats["total_acres"] * COST_PER_ACRE
 
-        # Create histogram of acres covered by fire in the US
-        """
-        fig, ax = plt.subplots()
-
-        acres_per_event = []
-        for event in fires:
-            acres_per_event.append(event.Acres)
-
-        ax.hist(acres_per_event, bins=10)
-
-        stats["figure"] = fig
-        """
         return stats
 
     @staticmethod
     def get_reverse_geocode(lat, lon):
         """
-        geolocator = Nominatim(user_agent="wildfires")
-        location = geolocator.reverse(f"{lat}, {lon}", timeout=None)
-
-        print(location.raw)
+        get_reverse_geocode() is a function that finds a wildfire event's 
+        state, city, and county given latitude and longitude coordinates. This
+        function utilizes the reverse_geocode library to do so. 
         """
         if lat != None and lon != None:
             coord = lat, lon
