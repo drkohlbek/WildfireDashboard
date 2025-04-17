@@ -4,7 +4,6 @@ import pandas as pd
 import plotly.express as px
 import matplotlib.pyplot as plt
 import reverse_geocode
-import requests
 
 # Using numbers from https://www.nifc.gov/fire-information/statistics/suppression-costs,
 # the total cost per acre to suppress wildfires in 2023 was ~$1,177
