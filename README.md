@@ -1,4 +1,4 @@
 # WildfireDashboard
 https://wildfiredashboard.streamlit.app/  
-Please allow 30 - 60 seconds for the app to start up from inactivity.     
+Please allow up to one minute for the app to start up from inactivity.     
   
