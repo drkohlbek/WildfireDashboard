@@ -46,6 +46,6 @@ table = st.dataframe(df, hide_index=True, column_config={
 st.markdown("#### Get fire by ID")
 id = st.number_input(
     "Enter the ID of the fire to get detailed information on the event", value=38144)
-test_dict = stack.get_by_ID(id)
+user_dict = stack.get_by_ID(id)
 
-st.table(test_dict)
+st.table(user_dict)
