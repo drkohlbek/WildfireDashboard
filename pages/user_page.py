@@ -3,9 +3,9 @@ import pandas as pd
 from backend.middle import top_three, fires_dict, stack
 # package to format long numbers, i.e. 6,400 -> 6.4k
 from millify import millify
+
+
 # Cache fire data, otherwise streamlit deletes it every time you change the text_input()
-
-
 @st.cache_data
 def get_top_three(_top_three):
     return [fire.return_dict() for fire in _top_three]
@@ -40,7 +40,8 @@ st.markdown(
 
 
 table = st.dataframe(df, hide_index=True, column_config={
-                     "CurrentDate": None, "InitialLatitude": None, "InitialLongitude": None, "FireBehaviorGeneral": None, "FireCauseSpecific": None, "IncidentShortDescription": None})
+                     "CurrentDate": None, "InitialLatitude": None, "InitialLongitude": None,
+                     "FireBehaviorGeneral": None, "FireCauseSpecific": None, "IncidentShortDescription": None})
 
 
 st.markdown("#### Get fire by ID")

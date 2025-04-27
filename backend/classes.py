@@ -116,7 +116,9 @@ class Event():
 
     def __str__(self):
         return f"Information on wildfire {self.ID} in {self.City}, {self.State}:\n \
-Incident Name: {self.IncidentName}\n Coverage in Acres: {self.Acres}\n Start Date: {self.convert_date(self.CreateDate)}\n Time Elapsed: {str(self.time_elapsed())}\n Fire Behavior: {self.FireBehaviorGeneral}\n Cause: {self.FireCause}\n Estimated Cost: {self.Cost}\n\n \
+Incident Name: {self.IncidentName}\n Coverage in Acres: {self.Acres}\n Start Date: {self.convert_date(self.CreateDate)}\n \
+Time Elapsed: {str(self.time_elapsed())}\n Fire Behavior: {self.FireBehaviorGeneral}\n \
+Cause: {self.FireCause}\n Estimated Cost: {self.Cost}\n Priority: {self.Priority}\n\n \
 Description of the Incident:\n {self.IncidentShortDescription}"
 
     # convert ersi date integer to datetime
@@ -371,8 +373,9 @@ class EventUtils():
 
         # plot
         fig = px.scatter_map(df, lat=df["InitialLatitude"], lon=df["InitialLongitude"],
-                             hover_name="IncidentName", hover_data={'ID': True, 'InitialLatitude': True, 'InitialLongitude': True, 'Acres': True, 'size': False}, color="Acres", zoom=3, size=df["size"], height=700)
-        # setting renderer to notebook stops VScode from outputting a blank map, ref: https://community.plotly.com/t/new-plotly-express-scatter-map-not-working/87232/6
+                             hover_name="IncidentName", hover_data={'ID': True, 'InitialLatitude': True,
+                             'InitialLongitude': True, 'Acres': True, 'size': False}, color="Acres", zoom=3,
+                             size=df["size"], height=700)
         return fig
 
     # Method to load fires from data into list
@@ -389,9 +392,10 @@ class EventUtils():
             # Only select wild fires, not prescribed fires
             if properties['poly_FeatureCategory'] != 'Prescribed Fire':
                 coords = EventUtils.get_coordinates(feature)
-                # event = Event(properties['OBJECTID'], properties['poly_IncidentName'], properties['poly_GISAcres'], properties['poly_CreateDate'], properties['poly_DateCurrent'], properties['attr_FireBehaviorGeneral'], properties['attr_FireCause'], properties['attr_FireCauseSpecific'], properties['attr_IncidentShortDescription'], EventUtils.get_coordinates(feature), properties['attr_InitialLatitude'], properties['attr_InitialLongitude'], properties['attr_POOCity'], properties['attr_POOCounty'])
-                event = Event(ID=properties['OBJECTID'], IncidentName=properties['poly_IncidentName'], Acres=properties['poly_GISAcres'], CreateDate=properties['poly_CreateDate'], FireBehaviorGeneral=properties['attr_FireBehaviorGeneral'],
-                              FireCause=properties['attr_FireCause'], FireCauseSpecific=properties['attr_FireCauseSpecific'], IncidentShortDescription=properties['attr_IncidentShortDescription'], InitialLatitude=coords[1], InitialLongitude=coords[0])
+                event = Event(ID=properties['OBJECTID'], IncidentName=properties['poly_IncidentName'], Acres=properties['poly_GISAcres'],
+                              CreateDate=properties['poly_CreateDate'], FireBehaviorGeneral=properties['attr_FireBehaviorGeneral'],
+                              FireCause=properties['attr_FireCause'], FireCauseSpecific=properties['attr_FireCauseSpecific'],
+                              IncidentShortDescription=properties['attr_IncidentShortDescription'], InitialLatitude=coords[1], InitialLongitude=coords[0])
                 fires.append(event)
         return fires
 
@@ -438,9 +442,10 @@ class EventUtils():
     @staticmethod
     def get_reverse_geocode(lat, lon):
         """
-        get_reverse_geocode() is a function that finds a wildfire event's 
-        state, city, and county given latitude and longitude coordinates. This
-        function utilizes the reverse_geocode library to do so. 
+        This function returns a variety of geographical information in the form of a Python dictionary 
+        given a wildfire event’s latitude and longitude. The information used in this program is the 
+        city, state, and county. This function uses the reverse_geocode library to do so. 
+        Ref: https://pypi.org/project/reverse-geocode/
         """
         if lat != None and lon != None:
             coord = lat, lon
